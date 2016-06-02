@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Calculator
 {
@@ -10,27 +12,30 @@ namespace Calculator
     {
         static void Main(string[] args)
         {
-            var s = "!2+2*5";
+            var s = "3!+1*5-4^2";
             double r = Parse(s);
             Console.WriteLine(r);
             Console.ReadKey();
         }
 
+        // sets the starting index
+        // produces arithmetic operations
+        //of addition and subtraction
         static double Parse(string s)
         {
             int index = 0;
-            var v = Mult(s, ref index);
+            var v = MultDiv(s, ref index);
             while (index < s.Length)
             {
                 switch (s[index])
                 {
                     case '+':
                         index++;
-                        v += Mult(s, ref index);
+                        v += MultDiv(s, ref index);
                         break;
                     case '-':
                         index++;
-                        v -= Mult(s, ref index);
+                        v -= MultDiv(s, ref index);
                         break;
                     default:
                         Console.WriteLine("Error!");
@@ -40,146 +45,87 @@ namespace Calculator
             return v;
         }
 
-        static double Mult(string s, ref int index)
+        // produces arithmetic operations
+        //of multiplication and division
+        static double MultDiv(string s, ref int index)
         {
-            var v = Fact(s, ref index);
+            var v = Sqr(s, ref index);
             while (index < s.Length)
             {
-                switch (s[index])
+                if (s[index] == '*')
                 {
-                    case '*':
-                        index++;
-                        v *= Fact(s, ref index);
-                        break;
-                    case '/':
-                        index++;
-                        v /= Fact(s, ref index);
-                        break;
-                    default:
-                        return v;
+                    index++;
+                    v *= Sqr(s, ref index);
                 }
+                else if (s[index] == '/')
+                {
+                    index++;
+                    v /= Sqr(s, ref index);
+                }
+                else { break; }
             }
             return v;
         }
 
+        // involute
+        static double Sqr(string s, ref int index)
+        {
+            var v = Fact(s, ref index);
+
+            if (index < s.Length && s[index] == '^')
+            {
+                index++;
+                v = Math.Pow(v, Fact(s, ref index));
+            }
+            return v;
+        }
+
+        // multiplies all the natural numbers from 1 to v
         static double Fact(string s, ref int index)
         {
             var v = GetNumber(s, ref index);
             while (index < s.Length)
             {
-                switch (s[index])
+                if (s[index] == '!')
                 {
-                    case '!':
-                        index++;
-                        v *= (v - 1) * GetNumber(s, ref index);
-                        break;
-                    default:
-                        return v;
+                    index++;
+                    v = fact(v);
                 }
+                else { break; }
+
             }
             return v;
         }
 
+        // calculate the factorial
+        static double fact(double v)
+        {
+            double f = 1;
+            int i = 1;
+            while ( i <= v )
+            {
+                f *= i;
+                i++;
+            }
+            v = f;
+            return v;
+        }
+
+        // parses string, checks each symbol
+        //and recognizes the number of string
         static double GetNumber(string s, ref int index)
         {
-            string result = string.Empty;
-            foreach (char c in s.Substring(index))
+            var tmp = "";
+            foreach (var c in s.Substring(index))
             {
-                if (char.IsDigit(c))
+                if (!char.IsDigit(c))
                 {
-                    result += c.ToString();
-                    index++;
+                    break;
                 }
-                else if (c == '!')
-                {
-                    index++;
-                    continue;
-                }
-                else break;
+                tmp += c;
+                index++;
             }
-            return double.Parse(result);
+            return double.Parse(tmp);
         }
     }
 }
-
-////////////////second try////////////////////////
-/*   public static string Reverse(string s)
-   {
-       char[] charArray = s.ToCharArray();
-       Array.Reverse(charArray);
-       return new string(charArray);
-   }
-
-   static string DoMult(string s)
-   {
-       double val1;
-       double val2;
-
-       int index = 1;
-       int reverseIndex = s.Length;
-
-       string resString = s;
-
-       foreach(char c in s)
-       {
-           if(c == '*' && index < s.Length)
-           {
-               val1 = GetNumber(Reverse(s), ref reverseIndex);
-               val2 = GetNumber(s, ref index);
-
-               val1 = int.Parse(Reverse(val1.ToString()));
-
-               double res = val1 * val2;
-
-               string expression = string.Format("{0}*{1}", val1, val2);
-
-               resString = resString.Replace(expression, res.ToString());
-           }
-
-           reverseIndex--;
-           index++;
-       }
-
-       return resString;
-   }*/
-////////////////first try////////////////////////
-/*
- static void Main()
-    {
-        bool exit = false;
-        while (!exit)
-        {
-            Console.BackgroundColor = ConsoleColor.Red;
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Калькулятор");
-            Console.WriteLine(' ');
-            double a, b;
-            Console.WriteLine("Введите первое значение");
-            a = double.Parse(Console.ReadLine());
-            Console.WriteLine("Введите второе значение");
-            b = double.Parse(Console.ReadLine());
-            Console.WriteLine(' ');
-            Console.WriteLine(@"Выберите арифметическое действие: 
-         - Умножение (введите *) 
-         - Деление (введите /) 
-         - Сложение (введите +) 
-         - Вычитание (введите -)");
-            string q = Console.ReadLine();
-            if (q == "*")
-                Console.WriteLine("Результат умножения = {0}", a * b);
-            if (q == "/")
-                Console.WriteLine("Результат деления = {0}", a / b);
-            if (q == "+")
-                Console.WriteLine("Результат сложения = {0}", a + b);
-            if (q == "-")
-                Console.WriteLine("Результат вычитания = {0}", a - b);
-
-            Console.WriteLine("продолжить: Y/N");
-            string exitCommand = Console.ReadLine();
-            if (exitCommand.ToLower() == "n")
-            {
-                exit = true;
-            }
-            Console.Clear();
-        }
-    }*/
